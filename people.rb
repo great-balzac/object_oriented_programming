@@ -40,3 +40,9 @@ cristina.greeting
 chris.teach
 cristina.learn
 
+# Call teach method on Cristina
+cristina.rb # Code fails!
+# The teach method belongs to the instructor class,
+# therefore our instance of student called Cristina
+# does not inherit the method teach.
+
