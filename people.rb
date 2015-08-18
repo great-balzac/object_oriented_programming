@@ -34,3 +34,9 @@ chris.greeting
 cristina = Student.new
 cristina.name = "Cristina"
 cristina.greeting
+
+# Call the teach method on Chris and the learn method
+# on Cristina.
+chris.teach
+cristina.learn
+
