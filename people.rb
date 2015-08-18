@@ -29,3 +29,8 @@ end
 chris = Instructor.new
 chris.name = "Chris"
 chris.greeting
+
+# Create an instance of a student named Cristina.
+cristina = Student.new
+cristina.name = "Cristina"
+cristina.greeting
