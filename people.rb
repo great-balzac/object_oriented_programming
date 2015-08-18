@@ -25,7 +25,7 @@ class Instructor < Person
 end
 
 
-# Create an instance of a student named Chris.
-chris = Student.new
+# Create an instance of an instructor named Chris.
+chris = Instructor.new
 chris.name = "Chris"
 chris.greeting
