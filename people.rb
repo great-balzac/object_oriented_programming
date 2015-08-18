@@ -9,4 +9,8 @@ end
 
 class Instructor
 
+  def teach
+  	"Everything in Ruby is an object."
+  end
+
 end
