@@ -108,6 +108,95 @@ class Rover
     end
   end
 
+ #++++++++++++++++++++++++++++++++++
+  def grid_draw
+  if @cs == "ALPHA"
+    rovericon = "RA|"
+  elsif @cs == "BRAVO"
+    rovericon = "RB|"
+  end
+
+
+ # Create Y index
+    @ygrid = []
+    
+    0.upto($plateau[:ymax].to_i) {
+      |num|
+      @ygrid << num
+    }
+
+    dash = "--|"
+    @yline = ""
+
+# Creates Y line X grid spaces wide
+    0.upto($plateau[:xmax].to_i) {
+      |num|
+      @yline += dash
+    }
+
+    @ygrid = @ygrid.reverse
+    drawline = ""
+    @ygrid.each {
+      |num|
+      numstr = " "
+      
+        if num < 10
+          numstr += num.to_s
+          else numstr = num.to_s
+        end
+
+        if num == @y
+          chunk = "--|"
+          leftof = ""
+          rightof = ""
+          chunknum = 0
+          chunknum = @x
+    
+         chunknum.times {
+           |x|
+           leftof += chunk
+          }
+
+         ($plateau[:ymax].to_i - chunknum).times {
+           |x|
+           rightof += chunk
+          }
+
+         drawline = numstr + leftof + rovericon + rightof
+         puts drawline
+
+        else
+         drawline = numstr << @yline
+         puts drawline
+        end 
+      }
+
+# Sets array for X index
+    @xgrid = []
+      0.upto($plateau[:xmax].to_i) {
+      |num|
+      @xgrid << num
+    }
+
+# Set spacer
+    space = " "
+    print space
+# Writes X index
+    @xgrid.each {
+      |num|
+      numstr = ""
+  
+      if num < 10
+        numstr = space + num.to_s + space
+      else numstr = space + num.to_s
+      end
+    print numstr
+    }
+    puts ""
+  end
+
+ #++++++++++++++++++++++++++++++++++
+
   def mission_report
    # Determines final direction from last bearing
     @fdir = ""
@@ -122,6 +211,7 @@ class Rover
     end
 
     # Displays final position of rover
+    self.grid_draw
     puts "#{@cs} rover final position: x = #{@x}, y = #{@y}, bearing = #{@bearing} #{@fdir}."
     self.mission_control
     puts "*** #{@cs} ROVER MISSION COMPLETE ***"
