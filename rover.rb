@@ -235,6 +235,6 @@ end
   puts ""
   puts ""
 
-# Test initialization of rover data.
+# Sends rovers on their Mission!
   Rover.new(alpha, alphamove).read_instruction
   Rover.new(bravo, bravomove).read_instruction
