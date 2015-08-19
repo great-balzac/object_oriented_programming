@@ -54,14 +54,14 @@ class Rover
       @bearing = 4800
       puts "Turns #{wheel} to bearing #{@bearing}"
     # Detects if rover faces other than North
-    elsif wheel == "L" && @bearing > 1600
+    elsif wheel == "L" && @bearing >= 1600
       @bearing -= 1600
       puts "Turns #{wheel} to bearing #{@bearing}"
     # Detects if rover faces West
     elsif wheel == "R" && @bearing == 4800
       @bearing = 0
       puts "Turns #{wheel} to bearing #{@bearing}"
-    elsif wheel == "R" && @bearing < 4800
+    elsif wheel == "R" && @bearing <= 4800
       @bearing += 1600
       puts "Turns #{wheel} to bearing #{@bearing}"
     end
