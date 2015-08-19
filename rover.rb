@@ -72,6 +72,8 @@ class Rover
 
     @moves.each {
       |order|
+
+      self.mission_control
       if order == "L"
         self.turn("L")
       elsif order == "R"
@@ -81,7 +83,33 @@ class Rover
       end
     }
 
-    # Determines final direction from last bearing
+    self.mission_report
+  end
+
+  def mission_control
+
+    # Determines whether rover left the plateau
+    @off = false
+    if @x < 0
+      @off = true
+    elsif @x > $plateau[:xmax].to_i
+      @off = true
+    elsif @y < 0
+      @off = true
+    elsif @y > $plateau[:ymax].to_i
+      @off = true
+    else
+      @off = false
+    end
+
+    if @off == true
+      puts "Rover #{@cs} is off of the plateau!"
+    else
+    end
+  end
+
+  def mission_report
+   # Determines final direction from last bearing
     @fdir = ""
     if @bearing == 0
       @fdir = "N"
@@ -92,12 +120,14 @@ class Rover
     elsif @bearing == 4800
       @fdir = "W"
     end
+
     # Displays final position of rover
     puts "#{@cs} rover final position: x = #{@x}, y = #{@y}, bearing = #{@bearing} #{@fdir}."
-
+    self.mission_control
+    puts "*** #{@cs} ROVER MISSION COMPLETE ***"
   end
-
 end
+
 
 # ACCEPT ROVER INSTRUCTIONS
 # =========================
@@ -109,10 +139,10 @@ end
   gridsize = gets.chomp
 # Splits input into x and y co-ords and puts into a hash.
   gridsize = gridsize.split(" ",)
-  plateau = {:xmax => 0, :ymax => 0}
-  plateau[:xmax] = gridsize[0]
-  plateau[:ymax] = gridsize[1]
-  puts "Gridsize set at x = #{plateau[:xmax]}, y = #{plateau[:ymax]}."
+  $plateau = {:xmax => 0, :ymax => 0}
+  $plateau[:xmax] = gridsize[0]
+  $plateau[:ymax] = gridsize[1]
+  puts "Gridsize set at x = #{$plateau[:xmax]}, y = #{$plateau[:ymax]}."
   puts ""
 
 # ROVER ALPHA
@@ -207,8 +237,4 @@ end
 
 # Test initialization of rover data.
   Rover.new(alpha, alphamove).read_instruction
-  puts "***ALPHA MOVE COMPLETE***"
-  puts ""
   Rover.new(bravo, bravomove).read_instruction
-  puts "***BRAVO MOVE COMPLETE***"
-  puts ""  
