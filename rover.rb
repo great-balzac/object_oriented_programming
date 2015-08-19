@@ -110,6 +110,14 @@ class Rover
 
  #++++++++++++++++++++++++++++++++++
   def grid_draw
+  @ygrid = []
+  @yline = ""
+  dash = "--|"
+  drawline = ""
+  chunk = "--|"
+  leftof = ""
+  rightof = ""
+
   if @cs == "ALPHA"
     rovericon = "RA|"
   elsif @cs == "BRAVO"
@@ -118,15 +126,10 @@ class Rover
 
 
  # Create Y index
-    @ygrid = []
-    
     0.upto($plateau[:ymax].to_i) {
       |num|
       @ygrid << num
     }
-
-    dash = "--|"
-    @yline = ""
 
 # Creates Y line X grid spaces wide
     0.upto($plateau[:xmax].to_i) {
@@ -135,7 +138,7 @@ class Rover
     }
 
     @ygrid = @ygrid.reverse
-    drawline = ""
+
     @ygrid.each {
       |num|
       numstr = " "
@@ -146,18 +149,12 @@ class Rover
         end
 
         if num == @y
-          chunk = "--|"
-          leftof = ""
-          rightof = ""
-          chunknum = 0
-          chunknum = @x
-    
-         chunknum.times {
+         @x.times {
            |x|
            leftof += chunk
           }
 
-         ($plateau[:ymax].to_i - chunknum).times {
+         ($plateau[:ymax].to_i - @x).times {
            |x|
            rightof += chunk
           }
