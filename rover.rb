@@ -1,22 +1,100 @@
 class Rover
   attr_accessor :xstart, :ystart, :dir, :cs
-  def initialize(params = {})
+  def initialize(params = {}, moves)
     @xstart = params.fetch(:xstart)
     @ystart = params.fetch(:ystart)
     @dir = params.fetch(:dir)
     @cs = params.fetch(:cs)
-    puts "Rover callsign #{@cs.upcase} initialized at starting position:\nx = #{@xstart}, y = #{@ystart}, bearing = #{@dir}."
+
+    puts "Initializing rover #{@cs}:"
+    puts "Starting position:\nx = #{@xstart}, y = #{@ystart}, bearing = #{@dir}."
+    
+    @moves = moves
+    puts "Movement sequence: #{@moves}" 
+    puts ""
+    puts "#{@cs} rover is moving:"
+
+    # Sets bearing from user defined direction
+    @bearing = 0
+    if @dir == "N"
+      @bearing = 0
+    elsif @dir == "E"
+      @bearing = 1600
+    elsif @dir == "S"
+      @bearing = 3200
+    elsif @dir == "W"
+      @bearing = 4800
+    end
+
+    @x = @xstart.to_i
+    @y = @ystart.to_i
+
   end
 
-# Define rover behaviours.
-
-  def readinst
-  end
 
   def move
+    if @bearing == 0
+      @y += 1
+      puts "Advances 1 move North"
+    elsif @bearing == 1600
+      @x += 1
+      puts "Advances 1 move East"
+    elsif @bearing == 3200
+      @y -= 1
+      puts "Advances 1 move South"
+    elsif @bearing == 4800
+      @x -= 1
+      puts "Advances 1 move West"
+    end
   end
 
-  def turn
+  def turn(wheel)
+    # Detects if rover faces North
+    if wheel == "L" && @bearing == 0
+      @bearing = 4800
+      puts "Turns #{wheel} to bearing #{@bearing}"
+    # Detects if rover faces other than North
+    elsif wheel == "L" && @bearing > 1600
+      @bearing -= 1600
+      puts "Turns #{wheel} to bearing #{@bearing}"
+    # Detects if rover faces West
+    elsif wheel == "R" && @bearing == 4800
+      @bearing = 0
+      puts "Turns #{wheel} to bearing #{@bearing}"
+    elsif wheel == "R" && @bearing < 4800
+      @bearing += 1600
+      puts "Turns #{wheel} to bearing #{@bearing}"
+    end
+
+  end
+
+  def read_instruction
+
+    @moves.each {
+      |order|
+      if order == "L"
+        self.turn("L")
+      elsif order == "R"
+        self.turn("R")
+      elsif order == "M"
+        self.move
+      end
+    }
+
+    # Determines final direction from last bearing
+    @fdir = ""
+    if @bearing == 0
+      @fdir = "N"
+    elsif @bearing == 1600
+      @fdir = "E"
+    elsif @bearing == 3200
+      @fdir = "S"
+    elsif @bearing == 4800
+      @fdir = "W"
+    end
+    # Displays final position of rover
+    puts "#{@cs} rover final position: x = #{@x}, y = #{@y}, bearing = #{@bearing} #{@fdir}."
+
   end
 
 end
@@ -35,6 +113,7 @@ end
   plateau[:xmax] = gridsize[0]
   plateau[:ymax] = gridsize[1]
   puts "Gridsize set at x = #{plateau[:xmax]}, y = #{plateau[:ymax]}."
+  puts ""
 
 # ROVER ALPHA
 # ===========
@@ -125,8 +204,11 @@ end
   }
   puts ""
   puts ""
-  
+
 # Test initialization of rover data.
-  csa = Rover.new(alpha)
-  csb = Rover.new(bravo)
-  
+  Rover.new(alpha, alphamove).read_instruction
+  puts "***ALPHA MOVE COMPLETE***"
+  puts ""
+  Rover.new(bravo, bravomove).read_instruction
+  puts "***BRAVO MOVE COMPLETE***"
+  puts ""  
