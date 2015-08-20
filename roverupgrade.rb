@@ -25,6 +25,8 @@ class Mission
       elsif order == "M"
         @rover_on_mission.move
       end
+
+      self.mission_control
     }
 
   end # mission_execute
@@ -40,11 +42,11 @@ class Mission
     @off_grid = false
     if @rover_on_mission.rover_compass[:current_x] < 0
      @off_grid = true
-     elsif @rover_on_mission.rover_compass[:current_x] > plateau.xmax
+     elsif @rover_on_mission.rover_compass[:current_x] > @current_grid.xmax
      @off_grid = true
      elsif @rover_on_mission.rover_compass[:current_y] < 0
       @off_grid = true
-     elsif @rover_on_mission.rover_compass[:current_y] > plateau.ymax
+     elsif @rover_on_mission.rover_compass[:current_y] > @current_grid.ymax
       @off_grid = true
      else
       @off_grid = false
@@ -62,15 +64,16 @@ end # Mission class
 
 class Rover
 
-  attr_accessor :rover_name, :start_x, :start_y, :start_heading, :rover_movts, :rover_compass
+  attr_accessor :rover_name, :start_x, :start_y,
+  :start_heading, :rover_movts, :rover_compass
 
   def initialize(rover_name)
     @rover_name = rover_name.upcase
   end # initialize
 
   def starting_posn(start_x, start_y, start_heading)
-    @start_x = start_x
-    @start_x = start_y
+    @start_x = start_x.to_i
+    @start_y = start_y.to_i
     @start_heading = start_heading.upcase
 
     @rover_compass = {}
@@ -108,7 +111,7 @@ class Rover
     elsif @rover_compass[:bearing] == 3200
       @rover_compass[:current_y] -= 1
       puts "Advances 1 move South"
-    elsif @rover_compass[:bearing] == 0
+    elsif @rover_compass[:bearing] == 4800
       @rover_compass[:current_x] -= 1
       puts "Advances 1 move West"
     end
@@ -117,18 +120,19 @@ class Rover
 
   def turn(wheel)
     
+    # Detects if rover faces North for left calculation
     if wheel == "L" && @rover_compass[:bearing] == 0
       @rover_compass[:bearing] = 4800
       puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
-    # Detects if rover faces other than North
+    # Detects if rover faces other than North for left calculation
     elsif wheel == "L" && @rover_compass[:bearing] >= 1600
       @rover_compass[:bearing] -= 1600
       puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
-    # Detects if rover faces West
+    # Detects if rover faces West for right calculation
     elsif wheel == "R" && @rover_compass[:bearing] == 4800
       @rover_compass[:bearing] = 0
       puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
-    elsif wheel == "R" && rover_compass[:bearing] <= 4800
+    elsif wheel == "R" && rover_compass[:bearing] < 4800
       @rover_compass[:bearing] += 1600
       puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
     end
