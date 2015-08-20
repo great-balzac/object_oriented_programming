@@ -15,26 +15,36 @@ class Cart
 
   def remove_item(returning_item)
     @returning_item = returning_item
-    # @contents_of_cart[@returning_item].pop # ?????
+    @contents_of_cart.delete(@returning_item)
   end
 
   def list_contents
-  	puts "#{@contents_of_cart}"
+	puts "Contents of: #{@name_of_cart}"
+	@contents_of_cart.each {
+		|item|
+		puts "#{item.quantity_of_item} x #{item.name_of_item}"
+	}
+	draw_separator
   end
 
   def checkout
   	@cart_checkout_total = 0
   	@contents_of_cart.each {
   			|item|
-  			item.tax
+  			@cart_checkout_total += (item.after_tax * item.quantity_of_item)
+			
+			puts "\n#{item.item_price} x #{item.quantity_of_item} #{item.name_of_item}"
   		}
-  	puts "#{@cart_checkout_total}"
+	
+	draw_separator
+  	puts "\nTOTAL AFTER TAX: #{@cart_checkout_total}"
   end
-
 
 end # Cart class
 
 class Item
+    attr_accessor :name_of_item, :item_price, :quantity_of_item, :after_tax
+
 
   def name(name_of_item)
   	@name_of_item = name_of_item
@@ -52,6 +62,10 @@ class Item
   	@tax_bool = tax_bool
   end
 
+  def quantity(quantity_of_item)
+	@quantity_of_item = quantity_of_item
+  end
+	
   def tax
 
   	@after_tax = @item_price
@@ -70,24 +84,26 @@ class Item
 
     # Round number up to nearest 0.05
     @after_tax = ((@after_tax*20).ceil) / 20
-
-    puts "#{@name_of_item} = #{@total}"
-
   end
 
 end # Item class
+
+  def draw_separator
+    15.times { print "_"}
+  end
 
 book = Item.new
 book.name("Something")
 book.price(12.99)
 book.imported(false)
 book.exempt(true)
+book.quantity(1)
 book.tax
 
 users_cart = Cart.new
 users_cart.name("My Cart")
 users_cart.add_item(book)
-# users_cart.remove_item(book)
+users_cart.remove_item(book)
 users_cart.list_contents
 users_cart.checkout
 
