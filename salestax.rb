@@ -22,7 +22,7 @@ class Cart
 	puts "\nContents of: #{@name_of_cart}"
 	@contents_of_cart.each {
 		|item|
-		puts "#{item.quantity_of_item} x #{item.name_of_item} #{(item.item_price + item.item_tax).round(2)}."
+		puts "#{item.quantity_of_item} x #{item.name_of_item} #{(item.item_price + item.item_tax + item.import_tax)}."
 		puts "is imported? = #{item.is_imported}, is tax exempt? = #{item.tax_exempt}."
 	}
 	draw_separator
@@ -88,7 +88,6 @@ class Item
 	# Detects if imported
   	if @is_imported == true
       @import_tax += (@item_price * 0.05)
-	  @import_tax
     else
     end
   end
@@ -103,7 +102,7 @@ class Item
   end
   
   def tax
-  	@item_tax = 0
+  	@item_tax = 0.0
 
   	# Detects if tax exempt
   	if @tax_exempt == false
@@ -233,7 +232,7 @@ box_of_chocolates2 = Item.new
 box_of_chocolates2.name("Box of imported chocolates")
 box_of_chocolates2.price(11.25)
 box_of_chocolates2.imported(true)
-box_of_chocolates2.exempt(false)
+box_of_chocolates2.exempt(true)
 box_of_chocolates2.quantity(1)
 box_of_chocolates2.tax
 
