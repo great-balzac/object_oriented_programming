@@ -1,219 +1,248 @@
-class Rover
-  attr_accessor :xstart, :ystart, :dir, :cs
-  def initialize(params = {}, moves)
-    @xstart = params.fetch(:xstart)
-    @ystart = params.fetch(:ystart)
-    @dir = params.fetch(:dir)
-    @cs = params.fetch(:cs)
+# UPDATED CODE
 
-    puts "Initializing rover #{@cs}:"
-    puts "Starting position:\nx = #{@xstart}, y = #{@ystart}, bearing = #{@dir}."
-    
-    @moves = moves
-    puts "Movement sequence: #{@moves}" 
-    puts ""
-    puts "#{@cs} rover is moving:"
+class Mission
+  attr_accessor :rover_on_mission, :current_grid, :mission_name
 
-    # Sets bearing from user defined direction
-    @bearing = 0
-    if @dir == "N"
-      @bearing = 0
-    elsif @dir == "E"
-      @bearing = 1600
-    elsif @dir == "S"
-      @bearing = 3200
-    elsif @dir == "W"
-      @bearing = 4800
-    end
-
-    @x = @xstart.to_i
-    @y = @ystart.to_i
-
+  def initialize(rover_on_mission, current_grid)
+    @rover_on_mission = rover_on_mission
+    @current_grid = current_grid
+  end
+  
+  def name(mission_name)
+    @mission_name = mission_name.upcase
   end
 
-
-  def move
-    if @bearing == 0
-      @y += 1
-      puts "Advances 1 move North"
-    elsif @bearing == 1600
-      @x += 1
-      puts "Advances 1 move East"
-    elsif @bearing == 3200
-      @y -= 1
-      puts "Advances 1 move South"
-    elsif @bearing == 4800
-      @x -= 1
-      puts "Advances 1 move West"
-    end
-  end
-
-  def turn(wheel)
-    # Detects if rover faces North
-    if wheel == "L" && @bearing == 0
-      @bearing = 4800
-      puts "Turns #{wheel} to bearing #{@bearing}"
-    # Detects if rover faces other than North
-    elsif wheel == "L" && @bearing >= 1600
-      @bearing -= 1600
-      puts "Turns #{wheel} to bearing #{@bearing}"
-    # Detects if rover faces West
-    elsif wheel == "R" && @bearing == 4800
-      @bearing = 0
-      puts "Turns #{wheel} to bearing #{@bearing}"
-    elsif wheel == "R" && @bearing <= 4800
-      @bearing += 1600
-      puts "Turns #{wheel} to bearing #{@bearing}"
-    end
-
-  end
-
-  def read_instruction
-
-    @moves.each {
+  def mission_execute
+   
+    @rover_on_mission.rover_movts.each {
       |order|
 
-      self.mission_control
+      # self.mission_control  <------ to detect if rover goes off plataeu
       if order == "L"
-        self.turn("L")
+        @rover_on_mission.turn("L")
       elsif order == "R"
-        self.turn("R")
+        @rover_on_mission.turn("R")
       elsif order == "M"
-        self.move
+        @rover_on_mission.move
       end
+
+      self.mission_control
     }
 
     self.mission_report
-  end
+
+  end # mission_execute
+
+  def mission_report
+  
+    @current_grid.draw_grid(@rover_on_mission)
+    # GENERATE REPORT
+    puts "#{@mission_name} is complete!"
+    puts "Final rover position:"
+    puts "X: #{@rover_on_mission.rover_compass[:current_x]}, Y: #{@rover_on_mission.rover_compass[:current_y]}."
+
+  end # mission_report
 
   def mission_control
 
-    # Determines whether rover left the plateau
-    @off = false
-    if @x < 0
-      @off = true
-    elsif @x > $plateau[:xmax].to_i
-      @off = true
-    elsif @y < 0
-      @off = true
-    elsif @y > $plateau[:ymax].to_i
-      @off = true
-    else
-      @off = false
+    @off_grid = false
+    if @rover_on_mission.rover_compass[:current_x] < 0
+     @off_grid = true
+     elsif @rover_on_mission.rover_compass[:current_x] > @current_grid.xmax
+     @off_grid = true
+     elsif @rover_on_mission.rover_compass[:current_y] < 0
+      @off_grid = true
+     elsif @rover_on_mission.rover_compass[:current_y] > @current_grid.ymax
+      @off_grid = true
+     else
+      @off_grid = false
     end
 
-    if @off == true
-      puts "Rover #{@cs} is off of the plateau!"
+    if @off_grid == true
+      puts "ALERT!!! Rover #{@rover_on_mission.rover_name} is off of the plateau!"
     else
     end
+
+  end # mission_control
+
+end # Mission class
+
+
+class Rover
+
+  attr_accessor :rover_name, :start_x, :start_y,
+  :start_heading, :rover_movts, :rover_compass, :cs
+
+  def initialize(rover_name, cs)
+    @rover_name = rover_name.upcase
+    @cs = cs.upcase
+  end # initialize
+
+  def starting_posn(start_x, start_y, start_heading)
+    @start_x = start_x.to_i
+    @start_y = start_y.to_i
+    @start_heading = start_heading.upcase
+
+    @rover_compass = {}
+
+    @rover_compass[:current_heading] = @start_heading.upcase
+
+    if @start_heading == "N"
+      @rover_compass[:bearing] = 0
+    elsif @start_heading == "E"
+      @rover_compass[:bearing] = 1600
+    elsif @start_heading == "S"
+      @rover_compass[:bearing] = 3200
+    elsif @start_heading == "W"
+      @rover_compass[:bearing] = 4800
+    end
+
+    @rover_compass[:current_x] = @start_x
+    @rover_compass[:current_y] = @start_y
+
   end
 
- #++++++++++++++++++++++++++++++++++
-  def grid_draw
-  @ygrid = []
-  @yline = ""
-  dash = "--|"
-  drawline = ""
-  chunk = "--|"
-  leftof = ""
-  rightof = ""
-
-  if @cs == "ALPHA"
-    rovericon = "RA|"
-  elsif @cs == "BRAVO"
-    rovericon = "RB|"
+  def movt_seq(rover_movts)
+    @rover_movts = rover_movts.upcase
+    @rover_movts = @rover_movts.split("",)
   end
 
+  def move
 
- # Create Y index
-    0.upto($plateau[:ymax].to_i) {
-      |num|
-      @ygrid << num
-    }
+    if @rover_compass[:bearing] == 0
+      @rover_compass[:current_y] += 1
+      puts "Advances 1 move North"
+    elsif @rover_compass[:bearing] == 1600
+      @rover_compass[:current_x] += 1
+      puts "Advances 1 move East"
+    elsif @rover_compass[:bearing] == 3200
+      @rover_compass[:current_y] -= 1
+      puts "Advances 1 move South"
+    elsif @rover_compass[:bearing] == 4800
+      @rover_compass[:current_x] -= 1
+      puts "Advances 1 move West"
+    end
 
-# Creates Y line X grid spaces wide
-    0.upto($plateau[:xmax].to_i) {
-      |num|
-      @yline += dash
-    }
+  end # move
 
-    @ygrid = @ygrid.reverse
+  def turn(wheel)
+    
+    # Detects if rover faces North for left calculation
+    if wheel == "L" && @rover_compass[:bearing] == 0
+      @rover_compass[:bearing] = 4800
+      puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
+    # Detects if rover faces other than North for left calculation
+    elsif wheel == "L" && @rover_compass[:bearing] >= 1600
+      @rover_compass[:bearing] -= 1600
+      puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
+    # Detects if rover faces West for right calculation
+    elsif wheel == "R" && @rover_compass[:bearing] == 4800
+      @rover_compass[:bearing] = 0
+      puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
+    elsif wheel == "R" && rover_compass[:bearing] < 4800
+      @rover_compass[:bearing] += 1600
+      puts "Turns #{wheel} to bearing #{@rover_compass[:bearing]}"
+    end
 
-    @ygrid.each {
-      |num|
-      numstr = " "
-      
-        if num < 10
-          numstr += num.to_s
-          else numstr = num.to_s
+  end # wheel
+
+end # Rover class
+
+class Grid
+
+  attr_accessor :xmax, :ymax, :grid_name
+
+  def set_size(xmax, ymax)
+  @xmax = xmax.to_i
+  @ymax = ymax.to_i
+
+  @map_array = []
+
+  # Inserts empty arrays representing Y index lines into main map array
+  0.upto(@ymax) do
+    |y_index|
+      y_index = y_index.to_i # Not sure if I need this here
+      y_index = Array.new
+      @map_array << y_index
+  end # Inserting empty arrays into map
+
+  # Inserts string representing empty grid cells into each Y index line
+  @map_array.each do
+    |x_index|
+      0.upto(@xmax) do
+        x_index << "|--|"
+      end
+  end
+
+  end # set_size
+
+  def name(grid_name)
+    @grid_name = grid_name.capitalize
+  end
+
+  def draw_grid(rover_reference)
+    @width_of_grid = self.xmax
+    @height_of_grid = self.ymax
+    @rover_reference = rover_reference
+
+    # Mark grid with rover icon
+    final_rover_x = @rover_reference.rover_compass[:current_x]
+    final_rover_y = @rover_reference.rover_compass[:current_y]
+
+    # Insert rover icon onto appropriate array within the map array
+    counter = @height_of_grid
+    @map_array.each do
+      |array_select|
+          if counter == final_rover_y
+          array_select.delete_at(final_rover_x)
+          array_select.insert(final_rover_x, @rover_reference.cs)
+        else
+        end
+      counter -= 1
+    end # Marking of grid
+
+    # Start drawing lines
+
+    counter = @height_of_grid
+    @map_array.each do
+      |y_line|
+        # Detects if y_index needs a 0 in front of single digit
+        
+        if counter == 0
+          print "Y" + counter.to_s
+        elsif counter.to_s.length == 1
+          print "0" + counter.to_s
+        else
+          print counter.to_s
         end
 
-        if num == @y
-         @x.times {
-           |x|
-           leftof += chunk
-          }
+        y_line.each do
+          |x_line|
+          print x_line # Prints x_line across y index
+        end
+        puts "\n"
+        counter -= 1 # Tracks y_index
+    end # grid lines
 
-         ($plateau[:ymax].to_i - @x).times {
-           |x|
-           rightof += chunk
-          }
-
-         drawline = numstr + leftof + rovericon + rightof
-         puts drawline
-
+    # Print X index numbers
+    counter = 0
+    print "  "
+    0.upto(@width_of_grid)do
+      |index_num|
+        if counter == 0
+          print "|X0|"
+        elsif counter > 0 && counter.to_s.length == 1
+          print "|0" + counter.to_s + "|"
         else
-         drawline = numstr << @yline
-         puts drawline
-        end 
-      }
-
-# Sets array for X index
-    @xgrid = []
-      0.upto($plateau[:xmax].to_i) {
-      |num|
-      @xgrid << num
-    }
-
-# Set spacer
-    space = " "
-    print space
-# Writes X index
-    @xgrid.each {
-      |num|
-      numstr = ""
-  
-      if num < 10
-        numstr = space + num.to_s + space
-      else numstr = space + num.to_s
-      end
-    print numstr
-    }
-    puts ""
-  end
-
- #++++++++++++++++++++++++++++++++++
-
-  def mission_report
-   # Determines final direction from last bearing
-    @fdir = ""
-    if @bearing == 0
-      @fdir = "N"
-    elsif @bearing == 1600
-      @fdir = "E"
-    elsif @bearing == 3200
-      @fdir = "S"
-    elsif @bearing == 4800
-      @fdir = "W"
+          print "|" + counter.to_s + "|"
+        end
+      counter += 1
     end
+    puts "\n"
+  end # end draw_grid
 
-    # Displays final position of rover
-    self.grid_draw
-    puts "#{@cs} rover final position: x = #{@x}, y = #{@y}, bearing = #{@bearing} #{@fdir}."
-    self.mission_control
-    puts "*** #{@cs} ROVER MISSION COMPLETE ***"
-  end
-end
+
+end # Grid class
 
 
 # ACCEPT ROVER INSTRUCTIONS
@@ -223,14 +252,14 @@ end
   puts "Define plateau size (x y)"
   puts "Example: 10 10"
   puts "========================="
-  gridsize = gets.chomp
-# Splits input into x and y co-ords and puts into a hash.
-  gridsize = gridsize.split(" ",)
-  $plateau = {:xmax => 0, :ymax => 0}
-  $plateau[:xmax] = gridsize[0]
-  $plateau[:ymax] = gridsize[1]
-  puts "Gridsize set at x = #{$plateau[:xmax]}, y = #{$plateau[:ymax]}."
-  puts ""
+  puts "X: "
+  gridx = gets.chomp
+  puts "Y: "
+  gridy = gets.chomp
+
+  plateau = Grid.new
+  plateau.set_size(gridx, gridy)
+  plateau.name("North Pole of Mars")
 
 # ROVER ALPHA
 # ===========
@@ -241,87 +270,51 @@ end
   puts "Define start position and header (x y direction)"
   puts "Example: 5 3 N"
   puts "================================================"
-  roverstart = gets.chomp
-
-# Splits input into x and y and direction and puts into a hash.
-
-  roverstart = roverstart.split(" ",)
-  alpha = { 
-    :xstart => roverstart[0],
-    :ystart => roverstart[1],
-    :dir => roverstart[2],
-    :cs => "ALPHA"
-  }
-
-# Display input for rover position.
-  puts ""
-  puts "Rover #{alpha[:cs]} start position: x = #{alpha[:xstart]}, y = #{alpha[:ystart]}, bearing = #{alpha[:dir]}."
-  puts ""
+  rover_start_x = gets.chomp
+  rover_start_y = gets.chomp
+  rover_start_heading = gets.chomp
 
 # Accept rover movements.
   puts "Define sequence of rover movements (L/R/M)"
   puts "Example: LMRMRMMMLMRM"
   puts "=========================================="
-
   alphamove = gets.chomp
-# Splits input into an array of movement sequences.
-  alphamove.upcase!
-  alphamove = alphamove.split("",)
-  puts ""
-  print "#{alpha[:cs]} rover movements sequenced: "
-  alphamove.each {
-    |x|
-    print x
-  }
-  puts ""
-  puts ""
+
+  cs_alpha = Rover.new("alpha", "|RA|")
+  cs_alpha.starting_posn(rover_start_x, rover_start_y, rover_start_heading)
+  cs_alpha.movt_seq(alphamove)
+
+
+# Sends rovers on their Mission!
+  mission_alpha = Mission.new(cs_alpha, plateau)
+  mission_alpha.name("Mission 1: Alpha")
+  mission_alpha.mission_execute
 
 # ROVER BRAVO
 # ===========
 #   Second & Third lines of input:
 #   Define initial start pos'n & header
 #   Define sequence of turn and advance
-
   puts "ROVER BRAVO:"
   puts "Define start position and header (x y direction)"
   puts "Example: 5 3 N"
   puts "================================================"
-  roverstart = gets.chomp
-
-# Splits input into x and y and direction and puts into a hash.
-
-  roverstart = roverstart.split(" ",)
-  bravo = {
-    :xstart => roverstart[0],
-    :ystart => roverstart[1],
-    :dir => roverstart[2],
-    :cs => "BRAVO",
-  }
-
-# Display input for rover position.
-
-  puts ""
-  puts "Rover #{bravo[:cs]} start position: x = #{bravo[:xstart]}, y = #{bravo[:ystart]}, bearing = #{bravo[:dir]}."
-  puts ""
+  rover_start_x = gets.chomp
+  rover_start_y = gets.chomp
+  rover_start_heading = gets.chomp
 
 # Accept rover movements.
   puts "Define sequence of rover movements (L/R/M)"
   puts "Example: LMRMRMMMLMRM"
   puts "=========================================="
-
   bravomove = gets.chomp
-# Splits input into an array of movement sequences.
-  bravomove.upcase!
-  bravomove = bravomove.split("",)
-  puts ""
-  print "#{bravo[:cs]} rover movements sequenced: "
-  bravomove.each {
-    |x|
-    print x
-  }
-  puts ""
-  puts ""
+
+  cs_bravo = Rover.new("bravo", "|RB|")
+  cs_bravo.starting_posn(rover_start_x, rover_start_y, rover_start_heading)
+  cs_bravo.movt_seq(bravomove)
+
 
 # Sends rovers on their Mission!
-  Rover.new(alpha, alphamove).read_instruction
-  Rover.new(bravo, bravomove).read_instruction
+  mission_bravo = Mission.new(cs_bravo, plateau)
+  mission_bravo.name("Mission 2: Bravo")
+  mission_bravo.mission_execute
