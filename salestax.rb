@@ -22,8 +22,8 @@ class Cart
 	puts "\nContents of: #{@name_of_cart}"
 	@contents_of_cart.each {
 		|item|
-		puts "#{item.quantity_of_item} x #{item.name_of_item} #{(item.item_price + item.item_tax + item.import_tax)}."
-		puts "is imported? = #{item.is_imported}, is tax exempt? = #{item.tax_exempt}."
+		puts "#{item.quantity_of_item} x #{item.name_of_item} #{(item.item_price + item.item_tax + item.import_tax).round(2)}."
+		# puts "is imported? = #{item.is_imported}, is tax exempt? = #{item.tax_exempt}."
 	}
 	draw_separator
   end
@@ -47,7 +47,6 @@ class Cart
 	# end of tax calculation
     
 	# Display total sales tax and total
-	draw_separator
 	puts "\nSales Taxes: #{@taxes_total.round(2)}"
 	puts "\nTotal: #{@cart_after_tax.round(2)}"
 	
@@ -64,6 +63,7 @@ class Cart
 	self.list_contents
 	self.cart_tax
 	draw_separator
+  puts "\n"
 	
   end
 
